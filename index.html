@@ -37,27 +37,20 @@
 					<br><br><br><br>
 					<h2>Algorithmic Structures and Fiber Topology</h2>
 					<h5>A Preliminary Exploration</h5>
-					<!-- <span>A Preliminary Exploration</span> -->
+					
 					<br><br><br><br><br><br><br>
 					<b>Arturs Berzins</b>
 					<br>
-					<!-- <br> -->
+					
 					<span class="subtitle">Iliad-Retreat</span>
 					<br>
-					<!-- <br> -->
+					
 					<span class="subtitle">October 28, 2026</span>
-					<aside class="notes">
-					</aside>
 				</section>
 
 				<section class="motivation-slide">
 					<div class="title">Solution set of a ReLU network</div>
-					<!-- <br>
-					<div class="motivation-premises">
-						<div>Many parameters fit the same training data.</div>
-						<div>They can implement different functions away from the data.</div>
-						<div>Training does not sample these solutions uniformly.</div>
-					</div> -->
+					
 
 					<div>
 						<br><br>
@@ -73,33 +66,12 @@
 						</ul>
 						<br><br>
 
-						<!-- <div class="theorem">
-						<div class="label">Theorem</div>
-							The lifted fiber is a finite union of activation-restricted affine sections of the toric path image:
-							\[
-								F^\phi
-								=
-								\bigcup_{\sigma\in\mathcal T_X}
-								\left(
-									\Sigma_{X,\sigma}\cap H_{X,\sigma}(Y)
-								\right).
-							\]
-						</div> -->
+						
 						<br>
 
 						Caveat: <br> naively $\mathcal{O}(2^{N n_H})$ with $N$ samples and $n_H$ hidden neurons. <br>
 						
 					</div>
-
-					<!-- <br><br>
-					<div class="motivation-question">What solutions exist, how are they arranged, and which does training select?</div>
-					<br><br>
-
-					<div class="motivation-route">
-					</div> -->
-
-					<aside class="notes">
-					</aside>
 				</section>
 
 
@@ -119,23 +91,18 @@
 						title="Interactive 1-1-1-1 lifted fiber and activation explorer"
 						loading="eager"
 					></iframe>
-					<!-- <div class="fragment">
-						TODO: format remark
-						Note: some directions encode function equivalences (not just finite data).
-						Cells implement qualitatively different solutions.
-						Research question: Bridge fiber topology to mechinterp, e.g., components <=> algorithms?
-					</div> -->
+					
 					<div class="fragment fiber-choice-prompt">
 						Cells and solution qualities seem to relate.
 					</div>
 				</section>
 
 				<section>
-					<!-- <div class="title">Lifted dynamics and initialization bias</div> -->
+					
 					<br><br><br><br><br><br>
 					<b>Research question</b>:<br>
 					How are the different computational structures organized in the fiber?
-					<!-- , representable by the NN architecture,  -->
+					
 
 					<br><br>
 					<b>H1</b>: <br>
@@ -144,10 +111,6 @@
 					<br><br>
 					<b>H2</b>: <br>
 					Topological inclusion (face relations) captures algorithmic abstractions.
-
-
-					<aside class="notes">
-					</aside>
 				</section>
 
 				<section class="text-plot-slide">
@@ -181,7 +144,7 @@
 									<li>262 cells</li>
 									<li>6 connected components</li>
 									<li>max dimension 4</li>
-									<!-- <li>non-pure</li> -->
+									
 									<li><a href="plots/xor_hasse_all.svg" target="_blank" rel="noopener">Hasse diagram</a></li>
 								</ul></li>
 						</ul></div>
@@ -190,7 +153,7 @@
                 </section>
 
 				<section class="section-divider">
-					<!-- <div class="section-number">2</div> -->
+					
 					<h2>Algorithmic equivalence</h2>
 					<p>When are two algorithms the same?</p>
 				</section>
@@ -223,7 +186,7 @@
 					<br><br><br><br>
 					<span class="fragment">
 					<b>Equivalence</b>: an invertible transformation of states (and interventions) that preserves causal behavior.
-					<!-- <br> (neatly generalizes an independent idea from category theory, 2310.06756) -->
+					
 					<br><br>
 					<b>Abstraction</b>: a many-to-one transformation of states (and corresponding interventions) that preserves the high-level causal behavior.
 					<br><br>
@@ -254,10 +217,10 @@
 						\end{array}
 						\]
 					<ul>
-						<!-- <li>I distinguishes all four hidden states, E merges even, O merges odd, P merges both even and odd (separately)</li> -->
+						
 						<li>E and O are two different abstractions of I</li>
 						<li>E and O do not appear in the same connected component of the fiber</li>
-						<!-- shallow network realizes the entire lattice -->
+						
 					</ul>
 					</span>
 
