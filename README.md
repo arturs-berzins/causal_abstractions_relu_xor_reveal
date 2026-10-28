@@ -1,5 +1,7 @@
 # Causal Abstractions in ReLU Networks: XOR
 
+[View the presentation](https://arturs-berzins.github.io/causal_abstractions_relu_xor_reveal/)
+
 Reveal.js presentation. Open `index.html` or run locally from this directory:
 
 ```bash
