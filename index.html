@@ -9,7 +9,7 @@
 		<link rel="stylesheet" href="dist/theme/arturs.css">
 		<link rel="stylesheet" href="dist/theme/fonts.css">
 		<link rel="stylesheet" href="plugin/highlight/monokai.css">
-		<link rel="stylesheet" href="style.css?v=20261005-1">
+		<link rel="stylesheet" href="style.css?v=20261028-1">
 	</head>
 	<body>
 		<div class="reveal">
@@ -127,7 +127,11 @@
 						</ul></li>
 						<li>can vary $n$ and network width</li>
 					</ul></div>
-                        <iframe class="parity-plot-frame fragment" data-src="plots/parity-circuits.html" title="Three-bit parity: switching surfaces"></iframe>
+                        <div class="plot-embed fragment" aria-busy="true">
+                            <div class="plot-status" role="status">Loading interactive plot…</div>
+                            <iframe class="parity-plot-frame" data-plot-src="plots/parity-circuits.html" title="Three-bit parity: switching surfaces"></iframe>
+                            <a class="plot-open" href="plots/parity-circuits.html" target="_blank" rel="noopener">Open interactive plot ↗</a>
+                        </div>
                     </div>
                 </section>
 
@@ -147,7 +151,11 @@
 									<li><a href="plots/xor_hasse_all.svg" target="_blank" rel="noopener">Hasse diagram</a></li>
 								</ul></li>
 						</ul></div>
-                        <iframe class="parity-plot-frame fragment" data-src="plots/xor-projections.html" title="XOR fiber: six connected components"></iframe>
+                        <div class="plot-embed fragment" aria-busy="true">
+                            <div class="plot-status" role="status">Loading interactive plot…</div>
+                            <iframe class="parity-plot-frame" data-plot-src="plots/xor-projections.html" title="XOR fiber: six connected components"></iframe>
+                            <a class="plot-open" href="plots/xor-projections.html" target="_blank" rel="noopener">Open interactive plot ↗</a>
+                        </div>
                     </div>
                 </section>
 
@@ -262,7 +270,7 @@
                 if (['ArrowLeft', 'PageUp'].includes(event.data.key)) Reveal.prev();
                 if (event.data.key === 'Escape') Reveal.toggleOverview();
             });
-			Reveal.initialize({
+			const deckReady = Reveal.initialize({
 				hash: true,
 				slideNumber: true,
 				transition: 'none',
@@ -280,5 +288,6 @@
 				}
 			});
 		</script>
+        <script src="plot-preload.js"></script>
 	</body>
 </html>
