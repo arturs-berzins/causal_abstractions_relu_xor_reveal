@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title>Exploring Algorithmic Structures and Fiber Topology</title>
+		<link rel="icon" type="image/png" href="figures/favicon.png">
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/arturs.css">
+		<link rel="stylesheet" href="dist/theme/fonts.css">
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<link rel="stylesheet" href="style.css?v=20261005-1">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<!-- Shared TeX macros. Kept invisible to avoid a reload flash. -->
+				<div style="display:none;">
+				\(
+					\def\R{\mathbb{R}}
+					\def\C{\mathbb{C}}
+					\def\W{\mathcal{W}}
+					\def\P{\mathcal{P}}
+					\def\K{\mathcal{K}}
+					\def\F{\mathcal{F}}
+					\def\T{\mathsf{T}}
+					\newcommand{\rank}{\operatorname{rank}}
+					\newcommand{\im}{\operatorname{Im}}
+					\newcommand{\codim}{\operatorname{codim}}
+					\newcommand{\relu}[1]{[#1]_+}
+					\newcommand{\norm}[1]{\lVert #1\rVert}
+				\)
+				</div>
+
+				<section class="titleslide">
+					<br><br><br><br>
+					<h2>Algorithmic Structures and Fiber Topology</h2>
+					<h5>A Preliminary Exploration</h5>
+					<!-- <span>A Preliminary Exploration</span> -->
+					<br><br><br><br><br><br><br>
+					<b>Arturs Berzins</b>
+					<br>
+					<!-- <br> -->
+					<span class="subtitle">Iliad-Retreat</span>
+					<br>
+					<!-- <br> -->
+					<span class="subtitle">October 28, 2026</span>
+					<aside class="notes">
+					</aside>
+				</section>
+
+				<section class="motivation-slide">
+					<div class="title">Solution set of a ReLU network</div>
+					<!-- <br>
+					<div class="motivation-premises">
+						<div>Many parameters fit the same training data.</div>
+						<div>They can implement different functions away from the data.</div>
+						<div>Training does not sample these solutions uniformly.</div>
+					</div> -->
+
+					<div>
+						<br><br>
+						Solution set $F\subset\mathcal{W}$: all parameters interpolating the data $(X,Y)$. <br>
+						We can explicitly calculate the entire $F$ for ReLU networks.
+						<br><br><br>
+						Key idea: <br>
+						<ul>
+							<li>the path-lifting $\phi : \mathcal{W} \rightarrow \Sigma$ factors a ReLU network as $\mu_X(w) = A_{X,\sigma} \phi(w)$;</li>
+							<li>$\Sigma$ is toric, $A_{X, \sigma}$ is linear;</li>
+							<li>the lifted fiber $\phi(F)$ is a finite union of activation-restricted affine sections of $\Sigma$;</li>
+							<li>$\phi^{-1}(\phi(F))$ is easy-ish.</li>
+						</ul>
+						<br><br>
+
+						<!-- <div class="theorem">
+						<div class="label">Theorem</div>
+							The lifted fiber is a finite union of activation-restricted affine sections of the toric path image:
+							\[
+								F^\phi
+								=
+								\bigcup_{\sigma\in\mathcal T_X}
+								\left(
+									\Sigma_{X,\sigma}\cap H_{X,\sigma}(Y)
+								\right).
+							\]
+						</div> -->
+						<br>
+
+						Caveat: <br> naively $\mathcal{O}(2^{N n_H})$ with $N$ samples and $n_H$ hidden neurons. <br>
+						
+					</div>
+
+					<!-- <br><br>
+					<div class="motivation-question">What solutions exist, how are they arranged, and which does training select?</div>
+					<br><br>
+
+					<div class="motivation-route">
+					</div> -->
+
+					<aside class="notes">
+					</aside>
+				</section>
+
+
+				<section>
+					<div class="title">Lifted fiber example</div>
+					<br>
+					When $\phi$ is surjective, the lifted fiber is a polyhedral complex (on each sign chart).
+					<br>
+					1-1-1-1 network, 2 datapoints
+					<br><br>
+					Left: lifted fiber | Right: realized network $\mathbb{R} \rightarrow \mathbb{R}$ at the selected parameter
+					<!-- Faces are ordered by ternary patterns. -->
+					<br>
+					<iframe
+						class="fiber-explorer-frame"
+						src="fiber-explorer-1111.html?embed=1&amp;v=20260807-2"
+						title="Interactive 1-1-1-1 lifted fiber and activation explorer"
+						loading="eager"
+					></iframe>
+					<!-- <div class="fragment">
+						TODO: format remark
+						Note: some directions encode function equivalences (not just finite data).
+						Cells implement qualitatively different solutions.
+						Research question: Bridge fiber topology to mechinterp, e.g., components <=> algorithms?
+					</div> -->
+					<div class="fragment fiber-choice-prompt">
+						Cells and solution qualities seem to relate.
+					</div>
+				</section>
+
+				<section>
+					<!-- <div class="title">Lifted dynamics and initialization bias</div> -->
+					<br><br><br><br><br><br>
+					<b>Research question</b>:<br>
+					How are the different computational structures organized in the fiber?
+					<!-- , representable by the NN architecture,  -->
+
+					<br><br>
+					<b>H1</b>: <br>
+					A connected component implies an algorthmic equivalence class.
+
+					<br><br>
+					<b>H2</b>: <br>
+					Topological inclusion (face relations) captures algorithmic abstractions.
+
+
+					<aside class="notes">
+					</aside>
+				</section>
+
+				<section class="text-plot-slide">
+                    <div class="plot-slide-content">
+                        <div class="title">Toy problem: $n$-bit parity</div>
+                        <div class="plot-slide-text"><ul>
+						<li>
+							$\{ 0,1 \}^n \to \{0,1\} $
+						</li>
+						<li>Shallow ReLU can solve this exactly; lifted fiber is a polyhedral complex</li>
+						<li>At least two algorithms for any $n$
+							<ul>
+							<li>Hamming-counter: uses $n$ neurons</li>
+							<li>Vertex-detector: uses $2^{n-1}$ neurons</li>
+						</ul></li>
+						<li>can vary $n$ and network width</li>
+					</ul></div>
+                        <iframe class="parity-plot-frame fragment" data-src="plots/parity-circuits.html" title="Three-bit parity: switching surfaces"></iframe>
+                    </div>
+                </section>
+
+
+				<section class="text-plot-slide">
+                    <div class="plot-slide-content">
+                        <div class="title">XOR at $n=2$</div>
+                        <div class="plot-slide-text"><ul>
+							<li>2-2'-1' ReLU net can solve XOR </li>
+							<li>9 parameters - 2 symmetries = 7 paths</li>
+							<li>the polyhedral complex fiber
+							<ul>
+									<li>262 cells</li>
+									<li>6 connected components</li>
+									<li>max dimension 4</li>
+									<!-- <li>non-pure</li> -->
+									<li><a href="plots/xor_hasse_all.svg" target="_blank" rel="noopener">Hasse diagram</a></li>
+								</ul></li>
+						</ul></div>
+                        <iframe class="parity-plot-frame fragment" data-src="plots/xor-projections.html" title="XOR fiber: six connected components"></iframe>
+                    </div>
+                </section>
+
+				<section class="section-divider">
+					<!-- <div class="section-number">2</div> -->
+					<h2>Algorithmic equivalence</h2>
+					<p>When are two algorithms the same?</p>
+				</section>
+
+				<section>
+					<div class="title">When are two algorithms the same?</div>
+					Blass et al. 2009
+					<br><br><br><br>
+					Programs < Algorithms < Functions
+					<br><br>
+					<em>one cannot give a precise equivalence relation capturing the intuitive notion of "the same algorithm"</em>
+					<br><br>
+					Obstacles: context, level of abstraction, intention
+
+					<br><br><br><br><br><br>
+					<div class="fragment" style="text-align: center;">We do not strive for a <em>universal</em> equivalence.</div>
+				</section>
+
+
+				<section>
+					<div class="title">Causal abstractions</div>
+					Geiger et al. 2025
+					<br><br><br><br>
+					Proposed foundational basis for mech-interp
+					<br><br>
+					<b>Causal models</b> represent and help analyze and predict cause-and-effect relationships within a system.
+					<br><br>
+					<b>Causal abstraction</b> describes when a high-level causal model is an abstraction of a low-level causal model.
+
+					<br><br><br><br>
+					<span class="fragment">
+					<b>Equivalence</b>: an invertible transformation of states (and interventions) that preserves causal behavior.
+					<!-- <br> (neatly generalizes an independent idea from category theory, 2310.06756) -->
+					<br><br>
+					<b>Abstraction</b>: a many-to-one transformation of states (and corresponding interventions) that preserves the high-level causal behavior.
+					<br><br>
+					<b>Approximate transformation</b>: a transformation that preserves causal behavior up to a specified error.
+					</span>
+
+				</section>
+
+
+				<section>
+					<div class="title">Causal abstractions on XOR</div>
+					Practical classification handle: which datapoints get merged as representations?
+					<br><br>
+
+					<a href="plots/xor_hasse_all_causal.svg" target="_blank" rel="noopener">Classified Hasse diagram</a>
+					<br><br><br>
+					<span class="fragment">
+					
+						<br><br>
+					Abstraction lattice:
+						\[
+						\begin{array}{ccccc}
+						&&I&&\\
+						&\swarrow&&\searrow&\\
+						E&&&&O\\
+						&\searrow&&\swarrow&\\
+						&&P&&
+						\end{array}
+						\]
+					<ul>
+						<!-- <li>I distinguishes all four hidden states, E merges even, O merges odd, P merges both even and odd (separately)</li> -->
+						<li>E and O are two different abstractions of I</li>
+						<li>E and O do not appear in the same connected component of the fiber</li>
+						<!-- shallow network realizes the entire lattice -->
+					</ul>
+					</span>
+
+				</section>
+
+				<section>
+
+					<div class="title">Conclusion</div>
+					<ul class="">
+						<li>H1: true in XOR, if we allow for abstractions.</li>
+						<li>H2: false: face inclusion doesn't act as abstraction.</li>
+						<li>The fiber geometry regulates which abstractions are reachable as parameter deformations.</li>
+					</ul>
+					<br><br><br>
+
+					<span class="fragment">
+						Future work: <br>
+						<em>Leverage causal abstrations in learning theory</em><br>
+						<ul>
+							<li>Do critical points have meaning from the perspective of causal abstractions?</li>
+							<li>Is there a relative ordering of learning coefficients and causal abstractions?</li>
+						</ul>
+					</span>
+				</section>
+
+
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+			window.addEventListener('message', event => {
+                if (!Array.from(document.querySelectorAll('.parity-plot-frame')).some(frame => frame.contentWindow === event.source)) return;
+                if (event.data?.type !== 'fiber-plot-key') return;
+                if (['ArrowRight', 'PageDown'].includes(event.data.key)) Reveal.next();
+                if (['ArrowLeft', 'PageUp'].includes(event.data.key)) Reveal.prev();
+                if (event.data.key === 'Escape') Reveal.toggleOverview();
+            });
+			Reveal.initialize({
+				hash: true,
+				slideNumber: true,
+				transition: 'none',
+				controls: false,
+				progress: false,
+				navigationMode: 'linear',
+				center: false,
+				width: 1980,
+				height: 1400,
+				fragments: true,
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.MathJax3],
+				mathjax3: {
+					mathjax: 'tex-svg.js',
+					TeX: { extensions: ['color.js'] }
+				}
+			});
+		</script>
+	</body>
+</html>

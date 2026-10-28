@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1-1-1-1 gradient-flow trajectories</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #171717;
+      --muted: #686868;
+      --hairline: #d7d7d7;
+      --grid: #c9c9c9;
+      --fiber: #2b963d;
+      --fiber-fill: #9dcea5;
+      --fiber-dark: #186c2a;
+      --trajectory: #4a4a4a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    main {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 28px clamp(18px, 3vw, 48px) 38px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 42px;
+      margin-bottom: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    h1,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(23px, 2.6vw, 34px);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .init-control {
+      width: min(440px, 100%);
+      display: grid;
+      gap: 7px;
+    }
+
+    .control-labels {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 18px;
+      font-size: 14px;
+    }
+
+    #scale-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    #init-scale {
+      width: 100%;
+      margin: 0;
+      accent-color: var(--fiber-dark);
+    }
+
+    .balance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 12px;
+      font-size: 12px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12px;
+    }
+
+    .balance-toggle,
+    .defect-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .balance-toggle input {
+      margin: 0;
+      accent-color: var(--fiber-dark);
+    }
+
+    .defect-fields {
+      display: flex;
+      gap: 12px;
+    }
+
+    .defect-field input {
+      width: 66px;
+      padding: 2px 4px;
+      border: 1px solid var(--hairline);
+      border-radius: 2px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .defect-field input:disabled {
+      color: var(--muted);
+      background: #f5f5f5;
+    }
+
+    .run-status {
+      min-height: 15px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    #fiber-plot {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    #fiber-plot.rotating {
+      cursor: grabbing;
+    }
+
+    .grid-line,
+    .cube-edge,
+    .axis-line,
+    .surface-edge,
+    .surface-seam,
+    .trajectory-line {
+      vector-effect: non-scaling-stroke;
+    }
+
+    .grid-line {
+      fill: none;
+      stroke: var(--grid);
+      stroke-width: 0.8;
+      opacity: 0.48;
+    }
+
+    .cube-edge {
+      fill: none;
+      stroke: #a9a9a9;
+      stroke-width: 0.9;
+      opacity: 0.72;
+    }
+
+    .axis-line {
+      fill: none;
+      stroke: #4f4f4f;
+      stroke-width: 1.55;
+    }
+
+    .surface-triangle {
+      fill: var(--fiber-fill);
+      stroke: none;
+      opacity: 0.40;
+    }
+
+    .surface-edge,
+    .surface-seam {
+      fill: none;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .surface-edge {
+      stroke: var(--fiber);
+    }
+
+    .surface-seam {
+      stroke: var(--fiber-dark);
+    }
+
+    .fiber-tip {
+      fill: var(--fiber-dark);
+      stroke: none;
+    }
+
+    .trajectory-line {
+      fill: none;
+      stroke: var(--trajectory);
+      stroke-width: 1.05;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.24;
+    }
+
+    .trajectory-end {
+      fill: var(--ink);
+      stroke: none;
+      opacity: 0.82;
+    }
+
+    .axis-label {
+      fill: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      font-style: italic;
+    }
+
+    body.embed main {
+      width: min(1320px, 100%);
+      padding: 0 30px 24px;
+    }
+
+    body.embed header {
+      justify-content: center;
+      margin-bottom: 10px;
+      border-bottom: 0;
+    }
+
+    body.embed h1 {
+      display: none;
+    }
+
+    body.embed .init-control {
+      width: min(920px, 100%);
+    }
+
+    body.embed .control-labels {
+      font-size: 18px;
+    }
+
+    body.embed .balance-row,
+    body.embed .status-row,
+    body.embed .run-status {
+      font-size: 15px;
+    }
+
+    body.embed .defect-field input {
+      width: 80px;
+      padding: 4px 6px;
+    }
+
+    @media (max-width: 720px) {
+      header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      h1 {
+        white-space: normal;
+      }
+
+      .init-control {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Gradient flow — 1–1–1–1</h1>
+      <div class="init-control">
+        <div class="control-labels">
+          <label for="init-scale">Initialization scale</label>
+          <output id="scale-value" for="init-scale">s = 0.50</output>
+        </div>
+        <input id="init-scale" type="range" min="0.10" max="2.0" step="0.1" value="0.10">
+        <div class="balance-row">
+          <label class="balance-toggle" for="prescribe-balance">
+            <input id="prescribe-balance" type="checkbox">
+            Balance defects
+          </label>
+          <div class="defect-fields">
+            <label class="defect-field" for="balance-defect-1">δ₁
+              <input id="balance-defect-1" type="number" step="0.05" value="0" disabled>
+            </label>
+            <label class="defect-field" for="balance-defect-2">δ₂
+              <input id="balance-defect-2" type="number" step="0.05" value="0" disabled>
+            </label>
+          </div>
+        </div>
+        <div class="status-row">
+          <div class="defect-fields">
+            <label class="balance-toggle" for="show-trajectories">
+              <input id="show-trajectories" type="checkbox" checked>
+              Show trajectories
+            </label>
+            <label class="balance-toggle" for="converged-only">
+              <input id="converged-only" type="checkbox" checked>
+              Converged only
+            </label>
+          </div>
+          <p class="run-status" id="run-status">T = 20</p>
+        </div>
+      </div>
+    </header>
+
+    <svg id="fiber-plot" viewBox="0 0 760 620" role="img" aria-labelledby="fiber-svg-title fiber-svg-desc">
+      <title id="fiber-svg-title">Lifted gradient-flow trajectories around the three-dimensional ReLU fiber</title>
+      <desc id="fiber-svg-desc">One hundred raw Euclidean gradient-flow trajectories from uniform random initialization, lifted into coordinates u1, u2, and u3.</desc>
+    </svg>
+  </main>
+
+  <script>
+    if (new URLSearchParams(window.location.search).has("embed")) {
+      document.body.classList.add("embed");
+    }
+
+    const NS = "http://www.w3.org/2000/svg";
+    const fiberSvg = document.getElementById("fiber-plot");
+    const scaleSlider = document.getElementById("init-scale");
+    const scaleValue = document.getElementById("scale-value");
+    const showTrajectories = document.getElementById("show-trajectories");
+    const convergedOnly = document.getElementById("converged-only");
+    const prescribeBalance = document.getElementById("prescribe-balance");
+    const balanceDefect1 = document.getElementById("balance-defect-1");
+    const balanceDefect2 = document.getElementById("balance-defect-2");
+    const runStatus = document.getElementById("run-status");
+
+    const geometry = {
+      faces: [
+        { chart: "++", vertices: [[2, 2, -3], [3, 1, -3], [3, -2, 0], [0.5, 0.5, 0]] },
+        { chart: "++", vertices: [[0.5, 3, -2.5], [1, 3, -3], [2, 2, -3], [0.5, 0.5, 0]] },
+        { chart: "-+", vertices: [[3, 2, 1], [3, -3, 1], [0.5, -0.5, 1]] },
+        { chart: "-+", vertices: [[0.5, -0.5, 1], [3, -3, 1], [1, -3, 3], [0.5, -2.5, 3]] }
+      ],
+      seams: [
+        { chart: "++", points: [[0.5, 0.5, 0], [2, 2, -3]] },
+        { chart: "-+", points: [[0.5, -0.5, 1], [3, -3, 1]] }
+      ],
+      intrinsicEdges: [
+        { chart: "++", points: [[0.5, 0.5, 0], [3, -2, 0]] },
+        { chart: "++", points: [[0.5, 0.5, 0], [0.5, 3, -2.5]] },
+        { chart: "-+", points: [[0.5, -0.5, 1], [3, 2, 1]] },
+        { chart: "-+", points: [[0.5, -0.5, 1], [0.5, -2.5, 3]] }
+      ],
+      tips: [
+        { chart: "++", point: [0.5, 0.5, 0] },
+        { chart: "-+", point: [0.5, -0.5, 1] }
+      ]
+    };
+
+    const flowConfig = {
+      count: 1000,
+      duration: 20,
+      samples: 100,
+      initialStep: 0.01,
+      minStep: 1e-7,
+      maxStep: 0.2,
+      relativeTolerance: 1e-5,
+      absoluteTolerance: 1e-7,
+      balanceTolerance: 5e-5,
+      seed: 314159
+    };
+
+    const state = {
+      camera: { azimuth: 1.239, elevation: 0.255, zoom: 1 },
+      trajectories: [],
+      drag: null,
+      touches: new Map(),
+      pinch: null,
+      recomputeTimer: null
+    };
+
+    function svgEl(name, attrs = {}, text = null) {
+      const node = document.createElementNS(NS, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      if (text !== null) node.textContent = text;
+      return node;
+    }
+
+    function mulberry32(seed) {
+      let value = seed >>> 0;
+      return function random() {
+        value += 0x6D2B79F5;
+        let result = value;
+        result = Math.imul(result ^ (result >>> 15), result | 1);
+        result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+        return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const random = mulberry32(flowConfig.seed);
+    const baseInitializations = Array.from({ length: flowConfig.count }, () => (
+      Array.from({ length: 5 }, () => 2 * random() - 1)
+    ));
+
+    function applyBalanceDefects(theta, defect1, defect2) {
+      const [rawW1, rawB1, rawW2, rawB2, rawW3] = theta;
+      const w2Sign = rawW2 < 0 ? -1 : 1;
+      const b2Sign = rawB2 < 0 ? -1 : 1;
+      const w3Sign = rawW3 < 0 ? -1 : 1;
+
+      const w2Squared = Math.max(rawW2 * rawW2, -defect1);
+      const b2Squared = Math.max(rawB2 * rawB2, defect2 - w2Squared, 0);
+      const incomingSquared = Math.max(0, w2Squared + defect1);
+      const outputSquared = Math.max(0, w2Squared + b2Squared - defect2);
+
+      const rawIncomingNorm = Math.hypot(rawW1, rawB1);
+      const directionW1 = rawIncomingNorm > 0 ? rawW1 / rawIncomingNorm : Math.SQRT1_2;
+      const directionB1 = rawIncomingNorm > 0 ? rawB1 / rawIncomingNorm : Math.SQRT1_2;
+      const incomingNorm = Math.sqrt(incomingSquared);
+
+      return [
+        incomingNorm * directionW1,
+        incomingNorm * directionB1,
+        w2Sign * Math.sqrt(w2Squared),
+        b2Sign * Math.sqrt(b2Squared),
+        w3Sign * Math.sqrt(outputSquared)
+      ];
+    }
+
+    function makeInitialization(base, scale) {
+      const theta = base.map(value => scale * value);
+      if (!prescribeBalance.checked) return theta;
+      const defect1 = Number(balanceDefect1.value);
+      const defect2 = Number(balanceDefect2.value);
+      return applyBalanceDefects(
+        theta,
+        Number.isFinite(defect1) ? defect1 : 0,
+        Number.isFinite(defect2) ? defect2 : 0
+      );
+    }
+
+    function gradient(theta) {
+      const [w1, b1, w2, b2, w3] = theta;
+
+      const z1Minus = -w1 + b1;
+      const a1Minus = Math.max(0, z1Minus);
+      const z2Minus = w2 * a1Minus + b2;
+      const a2Minus = Math.max(0, z2Minus);
+      const errorMinus = w3 * a2Minus;
+
+      const z1Plus = w1 + b1;
+      const a1Plus = Math.max(0, z1Plus);
+      const z2Plus = w2 * a1Plus + b2;
+      const a2Plus = Math.max(0, z2Plus);
+      const errorPlus = w3 * a2Plus - 1;
+
+      const delta2Minus = errorMinus * w3 * (z2Minus > 0 ? 1 : 0);
+      const delta2Plus = errorPlus * w3 * (z2Plus > 0 ? 1 : 0);
+      const delta1Minus = delta2Minus * w2 * (z1Minus > 0 ? 1 : 0);
+      const delta1Plus = delta2Plus * w2 * (z1Plus > 0 ? 1 : 0);
+
+      return [
+        -delta1Minus + delta1Plus,
+        delta1Minus + delta1Plus,
+        delta2Minus * a1Minus + delta2Plus * a1Plus,
+        delta2Minus + delta2Plus,
+        errorMinus * a2Minus + errorPlus * a2Plus
+      ];
+    }
+
+    function velocity(theta) {
+      return gradient(theta).map(value => -value);
+    }
+
+    function combine(theta, step, terms) {
+      return theta.map((value, index) => (
+        value + step * terms.reduce((sum, [coefficient, vector]) => (
+          sum + coefficient * vector[index]
+        ), 0)
+      ));
+    }
+
+    function rk45Step(theta, step) {
+      const k1 = velocity(theta);
+      const k2 = velocity(combine(theta, step, [[1 / 5, k1]]));
+      const k3 = velocity(combine(theta, step, [[3 / 40, k1], [9 / 40, k2]]));
+      const k4 = velocity(combine(theta, step, [
+        [44 / 45, k1], [-56 / 15, k2], [32 / 9, k3]
+      ]));
+      const k5 = velocity(combine(theta, step, [
+        [19372 / 6561, k1], [-25360 / 2187, k2], [64448 / 6561, k3], [-212 / 729, k4]
+      ]));
+      const k6 = velocity(combine(theta, step, [
+        [9017 / 3168, k1], [-355 / 33, k2], [46732 / 5247, k3], [49 / 176, k4], [-5103 / 18656, k5]
+      ]));
+      const fifthOrder = combine(theta, step, [
+        [35 / 384, k1], [500 / 1113, k3], [125 / 192, k4], [-2187 / 6784, k5], [11 / 84, k6]
+      ]);
+      const k7 = velocity(fifthOrder);
+      const fourthOrder = combine(theta, step, [
+        [5179 / 57600, k1], [7571 / 16695, k3], [393 / 640, k4],
+        [-92097 / 339200, k5], [187 / 2100, k6], [1 / 40, k7]
+      ]);
+      return {
+        theta: fifthOrder,
+        error: fifthOrder.map((value, index) => value - fourthOrder[index])
+      };
+    }
+
+    function lift(theta) {
+      const [w1, b1, w2, b2, w3] = theta;
+      return [w3 * w2 * w1, w3 * w2 * b1, w3 * b2];
+    }
+
+    function trainingLoss(theta) {
+      const [w1, b1, w2, b2, w3] = theta;
+      const predict = x => w3 * Math.max(0, w2 * Math.max(0, w1 * x + b1) + b2);
+      const errorMinus = predict(-1);
+      const errorPlus = predict(1) - 1;
+      return 0.5 * (errorMinus * errorMinus + errorPlus * errorPlus);
+    }
+
+    function balanceDefects(theta) {
+      const [w1, b1, w2, b2, w3] = theta;
+      return [w1 * w1 + b1 * b1 - w2 * w2, w2 * w2 + b2 * b2 - w3 * w3];
+    }
+
+    function adaptiveError(theta, candidate, error, defectsBefore, defectsAfter) {
+      const parameterError = Math.sqrt(error.reduce((sum, value, index) => {
+        const scale = flowConfig.absoluteTolerance + flowConfig.relativeTolerance * Math.max(
+          Math.abs(theta[index]), Math.abs(candidate[index])
+        );
+        return sum + (value / scale) ** 2;
+      }, 0) / theta.length);
+
+      const defectError = defectsBefore.reduce((maximum, value, index) => {
+        const scale = flowConfig.balanceTolerance * (
+          1 + Math.max(Math.abs(value), Math.abs(defectsAfter[index]))
+        );
+        return Math.max(maximum, Math.abs(defectsAfter[index] - value) / scale);
+      }, 0);
+      return Math.max(parameterError, defectError);
+    }
+
+    function flowTrajectory(initialization) {
+      let theta = initialization.slice();
+      const path = [lift(theta)];
+      let time = 0;
+      let step = flowConfig.initialStep;
+      let attempts = 0;
+      let failed = false;
+      let loss = trainingLoss(theta);
+
+      for (let sample = 1; sample <= flowConfig.samples; sample += 1) {
+        const targetTime = flowConfig.duration * sample / flowConfig.samples;
+        while (time < targetTime - 1e-12) {
+          attempts += 1;
+          if (attempts > 200000) {
+            failed = true;
+            break;
+          }
+
+          step = Math.min(step, flowConfig.maxStep, targetTime - time);
+          const defectsBefore = balanceDefects(theta);
+          const trial = rk45Step(theta, step);
+          const candidateLoss = trainingLoss(trial.theta);
+          const finite = Number.isFinite(candidateLoss) && trial.theta.every(Number.isFinite);
+          const monotone = candidateLoss <= loss + 1e-10 * (1 + loss);
+          const error = finite ? adaptiveError(
+            theta,
+            trial.theta,
+            trial.error,
+            defectsBefore,
+            balanceDefects(trial.theta)
+          ) : Infinity;
+
+          if (finite && monotone && error <= 1) {
+            theta = trial.theta;
+            loss = candidateLoss;
+            time += step;
+            const growth = error === 0 ? 4 : Math.max(0.5, Math.min(4, 0.9 * error ** -0.2));
+            step = Math.min(flowConfig.maxStep, step * growth);
+          } else {
+            const shrink = Number.isFinite(error)
+              ? Math.max(0.1, Math.min(0.5, 0.9 * error ** -0.2))
+              : 0.1;
+            step *= shrink;
+            if (step < flowConfig.minStep) {
+              failed = true;
+              break;
+            }
+          }
+        }
+        path.push(lift(theta));
+        if (failed) break;
+      }
+      while (path.length <= flowConfig.samples) path.push(lift(theta));
+      path.converged = !failed && trainingLoss(theta) < 1e-6;
+      return path;
+    }
+
+    function project(point) {
+      const { azimuth, elevation, zoom } = state.camera;
+      const ca = Math.cos(azimuth);
+      const sa = Math.sin(azimuth);
+      const ce = Math.cos(elevation);
+      const se = Math.sin(elevation);
+      const right = [sa, -ca, 0];
+      const up = [-se * ca, -se * sa, ce];
+      const toward = [ce * ca, ce * sa, se];
+      const scale = 64 * zoom;
+      return {
+        x: 380 + scale * (point[0] * right[0] + point[1] * right[1]),
+        y: 306 - scale * (point[0] * up[0] + point[1] * up[1] + point[2] * up[2]),
+        depth: point[0] * toward[0] + point[1] * toward[1] + point[2] * toward[2]
+      };
+    }
+
+    function line3d(a, b, className, attrs = {}) {
+      const pa = project(a);
+      const pb = project(b);
+      return svgEl("line", {
+        x1: pa.x,
+        y1: pa.y,
+        x2: pb.x,
+        y2: pb.y,
+        class: className,
+        ...attrs
+      });
+    }
+
+    function appendGrid(root) {
+      const limit = 3.15;
+      const ticks = [-3, -2, -1, 0, 1, 2, 3];
+      ticks.forEach(tick => {
+        root.appendChild(line3d([-limit, tick, -limit], [limit, tick, -limit], "grid-line"));
+        root.appendChild(line3d([tick, -limit, -limit], [tick, limit, -limit], "grid-line"));
+        root.appendChild(line3d([-limit, -limit, tick], [limit, -limit, tick], "grid-line"));
+        root.appendChild(line3d([tick, -limit, -limit], [tick, -limit, limit], "grid-line"));
+        root.appendChild(line3d([-limit, -limit, tick], [-limit, limit, tick], "grid-line"));
+        root.appendChild(line3d([-limit, tick, -limit], [-limit, tick, limit], "grid-line"));
+      });
+
+      const corners = [
+        [-limit, -limit, -limit], [limit, -limit, -limit], [limit, limit, -limit], [-limit, limit, -limit],
+        [-limit, -limit, limit], [limit, -limit, limit], [limit, limit, limit], [-limit, limit, limit]
+      ];
+      const edges = [
+        [0, 1], [1, 2], [2, 3], [3, 0],
+        [4, 5], [5, 6], [6, 7], [7, 4],
+        [0, 4], [1, 5], [2, 6], [3, 7]
+      ];
+      edges.forEach(([a, b]) => root.appendChild(line3d(corners[a], corners[b], "cube-edge")));
+    }
+
+    function triangleFan(face) {
+      const triangles = [];
+      for (let index = 1; index < face.vertices.length - 1; index += 1) {
+        triangles.push([face.vertices[0], face.vertices[index], face.vertices[index + 1]]);
+      }
+      return triangles;
+    }
+
+    function appendAxes(root) {
+      const limit = 3.22;
+      const axes = [
+        { a: [-limit, 0, 0], b: [limit, 0, 0], label: "u₁" },
+        { a: [0, -limit, 0], b: [0, limit, 0], label: "u₂" },
+        { a: [0, 0, -limit], b: [0, 0, limit], label: "u₃" }
+      ];
+      axes.forEach(axis => {
+        root.appendChild(line3d(axis.a, axis.b, "axis-line", { "marker-end": "url(#axis-arrow-flow)" }));
+        const endpoint = project(axis.b);
+        const dx = endpoint.x >= 380 ? 9 : -9;
+        root.appendChild(svgEl("text", {
+          x: endpoint.x + dx,
+          y: endpoint.y - 7,
+          class: "axis-label",
+          "text-anchor": endpoint.x >= 380 ? "start" : "end"
+        }, axis.label));
+      });
+    }
+
+    function renderScene() {
+      fiberSvg.replaceChildren();
+      fiberSvg.appendChild(svgEl("title", { id: "fiber-svg-title" }, "Lifted gradient-flow trajectories around the three-dimensional ReLU fiber"));
+      fiberSvg.appendChild(svgEl("desc", { id: "fiber-svg-desc" }, "One hundred raw Euclidean gradient-flow trajectories from uniform random initialization, lifted into coordinates u1, u2, and u3."));
+
+      const defs = svgEl("defs");
+      const marker = svgEl("marker", {
+        id: "axis-arrow-flow",
+        viewBox: "0 0 10 10",
+        refX: 8.5,
+        refY: 5,
+        markerWidth: 6,
+        markerHeight: 6,
+        orient: "auto-start-reverse"
+      });
+      marker.appendChild(svgEl("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#4f4f4f" }));
+      defs.appendChild(marker);
+      fiberSvg.appendChild(defs);
+
+      const gridGroup = svgEl("g", { "pointer-events": "none" });
+      appendGrid(gridGroup);
+      fiberSvg.appendChild(gridGroup);
+
+      const surfaceGroup = svgEl("g", { "pointer-events": "none" });
+      geometry.faces.forEach(face => {
+        triangleFan(face).forEach(vertices => {
+          const screen = vertices.map(project);
+          surfaceGroup.appendChild(svgEl("polygon", {
+            points: screen.map(point => `${point.x},${point.y}`).join(" "),
+            class: "surface-triangle"
+          }));
+        });
+      });
+      fiberSvg.appendChild(surfaceGroup);
+
+      const trajectoryGroup = svgEl("g", {
+        class: "trajectory-layer",
+        display: showTrajectories.checked ? "inline" : "none",
+        "pointer-events": "none"
+      });
+      const endpointGroup = svgEl("g", { "pointer-events": "none" });
+      state.trajectories.forEach(path => {
+        const screen = path.map(project);
+        trajectoryGroup.appendChild(svgEl("polyline", {
+          points: screen.map(point => `${point.x},${point.y}`).join(" "),
+          class: `trajectory-line ${path.converged ? "trajectory-converged" : "trajectory-other"}`,
+          display: convergedOnly.checked && !path.converged ? "none" : "inline"
+        }));
+
+        if (path.converged) {
+          const endpoint = screen[screen.length - 1];
+          endpointGroup.appendChild(svgEl("circle", {
+            cx: endpoint.x,
+            cy: endpoint.y,
+            r: 2.1,
+            class: "trajectory-end"
+          }));
+        }
+      });
+      fiberSvg.appendChild(trajectoryGroup);
+      fiberSvg.appendChild(endpointGroup);
+
+      const edgesGroup = svgEl("g", { "pointer-events": "none" });
+      geometry.intrinsicEdges.forEach(edge => {
+        edgesGroup.appendChild(line3d(edge.points[0], edge.points[1], "surface-edge"));
+      });
+      geometry.seams.forEach(seam => {
+        edgesGroup.appendChild(line3d(seam.points[0], seam.points[1], "surface-seam"));
+      });
+      fiberSvg.appendChild(edgesGroup);
+
+      const axesGroup = svgEl("g", { "pointer-events": "none" });
+      appendAxes(axesGroup);
+      fiberSvg.appendChild(axesGroup);
+
+      const tipsGroup = svgEl("g", { "pointer-events": "none" });
+      geometry.tips.forEach(tip => {
+        const point = project(tip.point);
+        tipsGroup.appendChild(svgEl("circle", {
+          cx: point.x,
+          cy: point.y,
+          r: 3.5,
+          class: "fiber-tip"
+        }));
+      });
+      fiberSvg.appendChild(tipsGroup);
+
+      fiberSvg.appendChild(svgEl("rect", {
+        x: 0,
+        y: 0,
+        width: 760,
+        height: 620,
+        fill: "#ffffff",
+        "fill-opacity": 0,
+        "pointer-events": "all"
+      }));
+    }
+
+    function recomputeTrajectories() {
+      const scale = Number(scaleSlider.value);
+      scaleValue.textContent = `s = ${scale.toFixed(2)}`;
+      runStatus.textContent = `Flowing ${flowConfig.count} trajectories…`;
+
+      requestAnimationFrame(() => {
+        const startTime = performance.now();
+        state.trajectories = baseInitializations.map(base => (
+          flowTrajectory(makeInitialization(base, scale))
+        ));
+        const elapsed = Math.round(performance.now() - startTime);
+        runStatus.textContent = `${flowConfig.count} trajectories · T = ${flowConfig.duration} · ${elapsed} ms`;
+        renderScene();
+      });
+    }
+
+    function scheduleRecompute(delay = 120) {
+      clearTimeout(state.recomputeTimer);
+      const scale = Number(scaleSlider.value);
+      scaleValue.textContent = `s = ${scale.toFixed(2)}`;
+      state.recomputeTimer = setTimeout(recomputeTrajectories, delay);
+    }
+
+    scaleSlider.addEventListener("input", () => scheduleRecompute());
+    scaleSlider.addEventListener("change", () => scheduleRecompute(0));
+    showTrajectories.addEventListener("change", () => {
+      const layer = fiberSvg.querySelector(".trajectory-layer");
+      if (layer) layer.setAttribute("display", showTrajectories.checked ? "inline" : "none");
+    });
+    convergedOnly.addEventListener("change", () => {
+      fiberSvg.querySelectorAll(".trajectory-other").forEach(curve => {
+        curve.setAttribute("display", convergedOnly.checked ? "none" : "inline");
+      });
+    });
+    prescribeBalance.addEventListener("change", () => {
+      const enabled = prescribeBalance.checked;
+      balanceDefect1.disabled = !enabled;
+      balanceDefect2.disabled = !enabled;
+      scheduleRecompute(0);
+    });
+    [balanceDefect1, balanceDefect2].forEach(input => {
+      input.addEventListener("input", () => scheduleRecompute());
+      input.addEventListener("change", () => scheduleRecompute(0));
+    });
+
+    fiberSvg.addEventListener("pointerdown", event => {
+      if (event.pointerType === "touch") {
+        state.touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        fiberSvg.setPointerCapture(event.pointerId);
+        fiberSvg.classList.add("rotating");
+
+        if (state.touches.size === 1) {
+          state.drag = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            azimuth: state.camera.azimuth,
+            elevation: state.camera.elevation
+          };
+        } else {
+          const [a, b] = Array.from(state.touches.values());
+          state.drag = null;
+          state.pinch = {
+            distance: Math.max(1, Math.hypot(b.x - a.x, b.y - a.y)),
+            zoom: state.camera.zoom
+          };
+        }
+        event.preventDefault();
+        return;
+      }
+
+      if (event.button !== 0) return;
+      state.drag = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        azimuth: state.camera.azimuth,
+        elevation: state.camera.elevation
+      };
+      fiberSvg.setPointerCapture(event.pointerId);
+      fiberSvg.classList.add("rotating");
+      event.preventDefault();
+    });
+
+    fiberSvg.addEventListener("pointermove", event => {
+      if (event.pointerType === "touch" && state.touches.has(event.pointerId)) {
+        state.touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (state.touches.size >= 2) {
+          const [a, b] = Array.from(state.touches.values());
+          const distance = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y));
+          if (!state.pinch) state.pinch = { distance, zoom: state.camera.zoom };
+          state.camera.zoom = Math.max(0.72, Math.min(1.45, state.pinch.zoom * distance / state.pinch.distance));
+          renderScene();
+          event.preventDefault();
+          return;
+        }
+      }
+
+      if (!state.drag || state.drag.pointerId !== event.pointerId) return;
+      const dx = event.clientX - state.drag.startX;
+      const dy = event.clientY - state.drag.startY;
+      state.camera.azimuth = state.drag.azimuth + dx * 0.007;
+      state.camera.elevation = Math.max(-1.18, Math.min(1.18, state.drag.elevation + dy * 0.006));
+      renderScene();
+    });
+
+    function endRotation(event) {
+      if (event.pointerType === "touch") {
+        state.touches.delete(event.pointerId);
+        state.pinch = null;
+        if (state.touches.size === 1) {
+          const [pointerId, point] = state.touches.entries().next().value;
+          state.drag = {
+            pointerId,
+            startX: point.x,
+            startY: point.y,
+            azimuth: state.camera.azimuth,
+            elevation: state.camera.elevation
+          };
+        } else {
+          state.drag = null;
+          fiberSvg.classList.remove("rotating");
+        }
+        return;
+      }
+
+      if (!state.drag || state.drag.pointerId !== event.pointerId) return;
+      state.drag = null;
+      fiberSvg.classList.remove("rotating");
+    }
+
+    fiberSvg.addEventListener("pointerup", endRotation);
+    fiberSvg.addEventListener("pointercancel", endRotation);
+    fiberSvg.addEventListener("wheel", event => {
+      event.preventDefault();
+      state.camera.zoom = Math.max(0.72, Math.min(1.45, state.camera.zoom * Math.exp(-event.deltaY * 0.001)));
+      renderScene();
+    }, { passive: false });
+
+    recomputeTrajectories();
+  </script>
+</body>
+</html>
